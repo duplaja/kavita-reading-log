@@ -2,7 +2,8 @@
 Generates a static Kavita reading log one-page site
 
 ## Simple Setup
-* Place kavita-reading-log.py and index.html in the same folder (may modify and move kavita-reading-log.py up a level and change json write location if you wish)
+* Place kavita-reading-log.py and index.html in the same folder
+* **Important: You should modify and move kavita-reading-log.py up a level and change json write location if hosting publically, or at least be sure the .py file is not able to be accessed / downloadable)**
 * Edit the settings at the top of kavita-reading-log.py (ODPS url, and any exclusions / label groups)
 * Run kavita-reading-log.py to generate reading-history.json
 * index.html uses this file, to serve your reading log.
