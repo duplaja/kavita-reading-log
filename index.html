@@ -90,13 +90,13 @@
             color: #8aa4ce;
         }
         .progress-bar-bg {
-            flex: 1;
             background: #282b36;
             border-radius: 6px;
             height: 16px;
             margin-left: 1em;
+            width: 200px;      /* Fixed width for desktop */
             min-width: 110px;
-            max-width: 160px;
+            max-width: 100%;
             overflow: hidden;
             position: relative;
         }
@@ -124,7 +124,18 @@
             .tab-bar { flex-direction: column; gap: 0.2em; }
             .tab-button { padding: 0.5em 0.7em; font-size: 0.98em;}
             .item { flex-direction: column; align-items: flex-start; }
-            .progress-bar-bg { margin: 0.7em 0 0 0; width: 100%; min-width: 0; }
+            .progress-bar-bg {
+                margin: 0.7em 0 0 0;
+                width: 100%;
+                min-width: 0;
+                max-width: none;
+            }
+            .series {
+                white-space: normal;
+                text-overflow: initial;
+                overflow: visible;
+                word-break: break-word;
+            }
         }
     </style>
 </head>
@@ -203,11 +214,18 @@
                     return db.localeCompare(da);
                 });
                 window.__historyData = data;
-                // Determine all types
-                const types = Array.from(new Set(data.map(x => x.type)));
+
+                // Determine all types and order them
+                const allTypes = Array.from(new Set(data.map(x => x.type)));
+                const preferredOrder = ["Books", "Manhua", "Comics"];
+                const orderedTypes = [
+                    ...preferredOrder.filter(type => allTypes.includes(type)),
+                    ...allTypes.filter(type => !preferredOrder.includes(type))
+                ];
+
                 // Render tabs and first tab's content
-                renderTabs(types, types[0]);
-                renderHistory(data, types[0]);
+                renderTabs(orderedTypes, orderedTypes[0]);
+                renderHistory(data, orderedTypes[0]);
             })
             .catch(err => {
                 document.getElementById('historyDisplay').innerHTML =
