@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reading History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background: #181a20;
+            color: #e2e6ee;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 680px;
+            margin: 2em auto;
+            background: #23262e;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0008;
+            padding: 2em;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1.5em;
+            color: #80c7fa;
+        }
+        .tab-bar {
+            display: flex;
+            margin-bottom: 1em;
+            gap: 0.5em;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #31343c;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            color: #8aa4ce;
+            padding: 0.5em 1.2em;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 2px solid transparent;
+            transition: background 0.15s, color 0.15s;
+            outline: none;
+        }
+        .tab-button.active {
+            color: #ffb454;
+            background: #23262e;
+            border-bottom: 2px solid #ffb454;
+            font-weight: bold;
+        }
+        section {
+            margin-bottom: 2em;
+        }
+        .type-header {
+            color: #ffb454;
+            font-size: 1.2em;
+            margin-bottom: 0.6em;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #31343c;
+            padding-bottom: 0.2em;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8em 0.2em 0.8em 0;
+            border-bottom: 1px solid #21232b;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .details {
+            flex: 2;
+            min-width: 0;
+        }
+        .series {
+            font-size: 1.06em;
+            font-weight: 500;
+            color: #e2e6ee;
+            margin-bottom: 0.2em;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .meta {
+            font-size: 0.96em;
+            color: #8aa4ce;
+        }
+        .progress-bar-bg {
+            flex: 1;
+            background: #282b36;
+            border-radius: 6px;
+            height: 16px;
+            margin-left: 1em;
+            min-width: 110px;
+            max-width: 160px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #1a553b 60%, #1e7451);
+            transition: width 0.4s;
+        }
+        .progress-label {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            color: rgb(250, 247, 247);
+            font-size: 0.94em;
+            font-weight: 500;
+            line-height: 16px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 1em; }
+            .tab-bar { flex-direction: column; gap: 0.2em; }
+            .tab-button { padding: 0.5em 0.7em; font-size: 0.98em;}
+            .item { flex-direction: column; align-items: flex-start; }
+            .progress-bar-bg { margin: 0.7em 0 0 0; width: 100%; min-width: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reading History</h1>
+        <div class="tab-bar" id="tabBar"></div>
+        <div id="historyDisplay">Loading...</div>
+    </div>
+    <script>
+        function formatDate(dateStr) {
+            // input: MM/DD/YYYY
+            const [m, d, y] = dateStr.split("/");
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+        }
+
+        function renderTabs(types, currentType) {
+            const tabBar = document.getElementById('tabBar');
+            tabBar.innerHTML = types.map(type =>
+                `<button class="tab-button${type===currentType?' active':''}" data-type="${type}">${type}</button>`
+            ).join('');
+            // Add event listeners
+            Array.from(tabBar.querySelectorAll('.tab-button')).forEach(btn => {
+                btn.onclick = () => {
+                    renderHistory(window.__historyData, btn.dataset.type);
+                    renderTabs(types, btn.dataset.type);
+                }
+            });
+        }
+
+        function renderHistory(data, currentType) {
+            // Group by type
+            const byType = {};
+            data.forEach(item => {
+                if (!byType[item.type]) byType[item.type] = [];
+                byType[item.type].push(item);
+            });
+
+            let types = Object.keys(byType);
+            if (!currentType || !types.includes(currentType)) currentType = types[0];
+
+            let html = `<section>
+                <div class="type-header">${currentType}</div>
+                ${byType[currentType].map(item => `
+                    <div class="item">
+                        <div class="details">
+                            <div class="series">${item.series_name || '(Untitled)'}</div>
+                            <div class="meta">
+                                Read: <b>${item.readDate}</b>
+                                ${item.lastChapterRead ? `&nbsp;|&nbsp;Ch. <b>${item.lastChapterRead}</b>` : ''}
+                            </div>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width:${Math.round(item.percentRead)}%;"></div>
+                            <span class="progress-label">${Math.round(item.percentRead)}%</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </section>`;
+
+            document.getElementById('historyDisplay').innerHTML = html;
+            window.__currentType = currentType;
+            window.__types = types;
+        }
+
+        fetch('reading-history.json')
+            .then(res => {
+                if (!res.ok) throw new Error('File not found');
+                return res.json();
+            })
+            .then(data => {
+                // Sort entries by readDate descending (just in case)
+                data.sort((a, b) => {
+                    const da = formatDate(a.readDate);
+                    const db = formatDate(b.readDate);
+                    return db.localeCompare(da);
+                });
+                window.__historyData = data;
+                // Determine all types
+                const types = Array.from(new Set(data.map(x => x.type)));
+                // Render tabs and first tab's content
+                renderTabs(types, types[0]);
+                renderHistory(data, types[0]);
+            })
+            .catch(err => {
+                document.getElementById('historyDisplay').innerHTML =
+                    `<div style="color:#f66">Error: ${err.message}<br>
+                    Make sure <b>reading-history.json</b> is in the same folder and you're opening this page via a web server.</div>`;
+            });
+    </script>
+</body>
+</html>
