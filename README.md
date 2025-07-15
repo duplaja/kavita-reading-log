@@ -13,8 +13,9 @@ Generates a static Kavita reading log one-page site
 * I suggest putting the kavita-reading-log.py on a cron for every x hours / days.
 * Be sure to filter anything you want using the provided settings.
 
-## Points to Improve (may or may not happen)
+## Points to Improve (may or may not happen, feel free to fork and build if desired)
 * Static order of tabs (goes most recent to least)
 * Sortable order of items (goes most recent to least)
 * Metadata (if desired)
 * Better automatic filtering (tag, etc)
+* Integrate user stats?
